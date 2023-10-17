@@ -1,0 +1,14 @@
+<div class="infoProd">
+    <h1>Lista de productos Handlebars</h1>
+    <div class=" detalleProd">
+        <div class="prduct-container">
+            {{#each products}}
+            <div class="product">
+                <h2>{{this.description}}</h2>
+                <p>Precio: $ {{this.Price}}</p>
+                <a href="/api/products/{{this._id}}">Ver detalles</a>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

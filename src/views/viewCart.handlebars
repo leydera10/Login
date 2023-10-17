@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+</head>
+<body>
+    <div class="product-details">
+        <p>Carrito ID: {{carts._id}}</p>
+        <h2>Productos en el carrito</h2>
+        <ul>
+            {{#each carts.products}}
+            <li>
+                <p>Producto Id : {{this.productId._id}}</p>
+                <p>Descripcion : {{this.productId.description}}</p>
+                <p>Precio : {{this.productId.price}}</p>
+                <p>Cantidad : {{this.productId.quantity}} </p>
+            </li>
+            {{/each}} <!-- Agregado para cerrar el bloque each -->
+        </ul>
+    </div>
+</body>
+</html>
+
+</html>
