@@ -1,53 +1,51 @@
 import express from "express";
 import UserManager from "../controllers/UserManager.js"
 import { Router } from "express";
+import { createHash, isValidPassword } from "../utils.js";
+import passport from "passport"
 
 const userRouter = Router()
 const user = new UserManager()
 
-userRouter.get("/register", (req, res) => {
+userRouter.get("/register", passport.authenticate("register", {failureRedirect: "/failregister"}), async (req, res) => {
     try {
-      res.redirect("/register");
-    } catch (error) {
-      res.status(500).send("Error al acceder al perfil: " + error.message);
-    }
-  });
-
-  userRouter.post("/register", (req, res) => {
-    try {
-      let newUser = req.body;
-      user.addUser(newUser);
+      const {first_name, last_name, email, age , password, rol }= req.body
+      if (!first_name || !last_name || !email || ! age ) return res.status(400).send({status: 400, error: 'Faltan Datos'})
       res.redirect("/login");
     } catch (error) {
-      res.status(500).send("Error al acceder al perfil: " + error.message);
+      res.status(500).send("Error al acceder al acceder al registrar: " + error.message);
     }
   });
-  
-  
 
-  userRouter.post("/login", async (req, res) => {
+  userRouter.get("/failregister", async(req,res)=> {
+    console.log("Failed Strategy")
+    res.send({error:"Fail"})
+  })
+
+  userRouter.post("/login", passport.authenticate("login", {failureRedirect:"/faillogin"}), async (req, res) => {
     try {
-         let email = req.body.email
-         const data = await user.validateUser(email)
-         if (data && data.password === req.body.password) {
-            req.session.emailUsuario = email
-            req.session.nomUsuario = data.first_name;
-            req.session.apeUsuario = data.last_name;
-            req.session.rolUsuario = data.rol;
-            
-            if (data.rol === 'admin') {
-                res.redirect("/profile");
+         if (!req.user) return res.status(400).send({status: "error", error: "Credenciales invalidas" })
+         
+         if (req.user.rol === 'admin') {
+            req.session.emailUsuario = req.user.email
+            req.session.nomUsuario = req.user.first_name;
+            req.session.apeUsuario = req.user.last_name;
+            req.session.rolUsuario = req.user.rol;
+            res.redirect("/profile");
             } else {
-                res.redirect("/products");
+              req.session.emailUsuario = req.user.email;
+              req.session.rolUsuario = req.user.rol;
+              res.redirect("/products");
             }
-        } else {
-            res.redirect("../../login");
-        }
+
     } catch (error) {
         res.status(500).send("Error al acceder al perfil " + error.message);
     }
 });
 
+userRouter.get("/faillogin", async(req,res)=>{
+  res.send({error: "Failed Login"})
+})
 
 userRouter.get("/logout", async (req, res)=> {
     req.session.destroy((error) => {
@@ -59,6 +57,14 @@ userRouter.get("/logout", async (req, res)=> {
     })
 })
 
+userRouter.get("/github", passport.authenticate("github", {scope:["user:email"]}),async (req, res)=> {})
+
+userRouter.get("/githubcallback", passport.authenticate("github", {failureRedirect:"/login"}),async (req, res)=> {
+  req.session.user = req.user
+  req.session.emailUsuario = req.session.user.email
+  req.session.rolUsuario = req.session.user.rol
+  res.redirect("/products")
+})
 
 
 export default userRouter

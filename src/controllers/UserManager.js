@@ -104,6 +104,32 @@ class UserManager extends userModel
           return 'Error al validar usuario';
         }
       }
+
+      async findUser(email){
+        try{
+            const user = await UserManager.findOne({email}, {email: 1, first_name: 1, last_name: 1 , rol: 1 });
+
+            if (!user){
+                return "User not Found  "
+            }
+
+            return user;
+
+        } catch (error) {
+            console.log('Error Validating user ', error)
+            return 'Error getting user'
+        }
+      }
+
+      async findEmail(param){
+        try{
+            const user = await UserManager.findOne(param)
+            return user
+        } catch (error) {
+            console.log('Error getting user ', error)
+            return 'Error getting user'
+        }
+      }
       
 
 }
